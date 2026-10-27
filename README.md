@@ -1,5 +1,7 @@
 # DashCam Studio — erster funktionaler Stand
 
+> **KI-generiertes Projekt / AI-generated project:** Der bisherige Quellcode, die Tests und die Dokumentation wurden mit OpenAI Codex auf Basis menschlicher Vorgaben erstellt. Die Entwicklung wird vom Projektinhaber gesteuert. Automatisierte Tests ersetzen keine vollständige menschliche Prüfung. Künftige KI-generierte oder KI-unterstützte Änderungen werden entsprechend gekennzeichnet.
+
 Linux-Desktopanwendung zum Sichten und Schneiden normaler Videos. Python 3.11+, PySide6/Qt Multimedia, FFmpeg und ffprobe. Keine Kenwood-Dateien oder Telemetrie erforderlich. Das frühere Designbild war im Gesprächsabruf nicht verfügbar; das dunkle Layout folgt der beschriebenen Anordnung.
 
 ## Start auf CachyOS / Arch
