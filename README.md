@@ -4,6 +4,12 @@
 
 Linux-Desktopanwendung zum Sichten und Schneiden normaler Videos. Python 3.11+, PySide6/Qt Multimedia, FFmpeg und ffprobe. Keine Kenwood-Dateien oder Telemetrie erforderlich. Das frühere Designbild war im Gesprächsabruf nicht verfügbar; das dunkle Layout folgt der beschriebenen Anordnung.
 
+## Entwicklungsziel: modulare Kameraunterstützung
+
+Weitere Dashcam-Hersteller und -Modelle sollen schrittweise **modular ergänzt** werden können. Geplant sind austauschbare Kameraadapter für Dateierkennung, Aufnahmezuordnung sowie das Auslesen und Normalisieren modellspezifischer Metadaten und Telemetrie (z. B. GPS, Geschwindigkeit und G-Sensor). Player, Projektverwaltung und Darstellung sollen unabhängig vom jeweiligen Kameramodell bleiben.
+
+Normale Videos und Kameras ohne unterstützte Telemetrie sollen weiterhin abspielbar sein; fehlende Daten werden ausdrücklich als „keine Daten“ angezeigt. Neue Adapter sollen anhand geeigneter Beispieldateien separat getestet werden. Kenwood DRV-N520 ist ein erster geplanter Kandidat, keine Beschränkung auf einen Hersteller. Die Adapterschnittstelle und modellspezifische Parser sind noch zu implementieren.
+
 ## UI-Zielbild
 
 Das folgende **KI-generierte Zielbild** dient als visuelle Orientierung für die weitere Entwicklung. Es ist ein Designentwurf und zeigt nicht den aktuellen Funktionsstand. Karte, GPS-Geschwindigkeit und G-Sensorwerte sind illustrative Beispieldaten; ihre Darstellung bedeutet keine bereits implementierte Telemetrieunterstützung.

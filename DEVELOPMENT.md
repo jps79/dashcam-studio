@@ -4,6 +4,10 @@
 
 DashCam Studio für CachyOS/Arch Linux. PySide6/Qt, ffmpeg/ffprobe. Zuerst normale Testvideos, später DashCam-Telemetrie (Kenwood DRV-N520); echte Kenwood-Dateien liegen bisher nicht vor.
 
+## Architekturziel: weitere Kameras modular ergänzen
+
+Weitere Hersteller und Modelle über separate, austauschbare Kameraadapter ergänzen. Gemeinsame Schnittstellen für Dateierkennung, Aufnahmezuordnung und normalisierte Telemetrie vorsehen; Player, Projektmodell und UI von modellspezifischen Parsern trennen. Unbekannte Modelle und fehlende Telemetrie dürfen die normale Videowiedergabe nicht verhindern. Jeden Adapter mit geeigneten Beispieldateien prüfen. Diese Adapterarchitektur ist ein Entwicklungsziel und bisher nicht implementiert.
+
 ## Implementiert
 
 - Dunkle Desktopoberfläche mit Qt-Multimedia-Player, Lautstärke und Standardnavigation.
