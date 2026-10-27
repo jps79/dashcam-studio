@@ -4,6 +4,12 @@
 
 Linux-Desktopanwendung zum Sichten und Schneiden normaler Videos. Python 3.11+, PySide6/Qt Multimedia, FFmpeg und ffprobe. Keine Kenwood-Dateien oder Telemetrie erforderlich. Das frühere Designbild war im Gesprächsabruf nicht verfügbar; das dunkle Layout folgt der beschriebenen Anordnung.
 
+## UI-Zielbild
+
+Das folgende **KI-generierte Zielbild** dient als visuelle Orientierung für die weitere Entwicklung. Es ist ein Designentwurf und zeigt nicht den aktuellen Funktionsstand. Karte, GPS-Geschwindigkeit und G-Sensorwerte sind illustrative Beispieldaten; ihre Darstellung bedeutet keine bereits implementierte Telemetrieunterstützung.
+
+![KI-generiertes UI-Zielbild für DashCam Studio](docs/design/zielbild.png)
+
 ## Start auf CachyOS / Arch
 
 FFmpeg und ffprobe müssen im PATH liegen. Falls sie fehlen, nach eigener Prüfung über die Arch-Paketverwaltung installieren (`sudo pacman -S ffmpeg python`). Das Projekt installiert selbst keine Systempakete.
