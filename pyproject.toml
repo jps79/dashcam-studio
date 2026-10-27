@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dashcam-studio"
+version = "0.1.0"
+description = "Non-destructive Linux video review and trimming"
+requires-python = ">=3.11"
+dependencies = ["PySide6>=6.8,<7"]
+
+[project.scripts]
+dashcam-studio = "dashcam_studio.app:main"
+
+[tool.setuptools.packages.find]
+include = ["dashcam_studio*"]
