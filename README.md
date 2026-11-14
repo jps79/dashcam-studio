@@ -8,7 +8,7 @@ Linux-Desktopanwendung zum Sichten und Schneiden normaler Videos. Python 3.11+, 
 
 Weitere Dashcam-Hersteller und -Modelle sollen schrittweise **modular ergänzt** werden können. Geplant sind austauschbare Kameraadapter für Dateierkennung, Aufnahmezuordnung sowie das Auslesen und Normalisieren modellspezifischer Metadaten und Telemetrie (z. B. GPS, Geschwindigkeit und G-Sensor). Player, Projektverwaltung und Darstellung sollen unabhängig vom jeweiligen Kameramodell bleiben.
 
-Normale Videos und Kameras ohne unterstützte Telemetrie sollen weiterhin abspielbar sein; fehlende Daten werden ausdrücklich als „keine Daten“ angezeigt. Neue Adapter sollen anhand geeigneter Beispieldateien separat getestet werden. Kenwood DRV-N520 ist ein erster geplanter Kandidat, keine Beschränkung auf einen Hersteller. Die Adapterschnittstelle und modellspezifische Parser sind noch zu implementieren.
+Normale Videos und Kameras ohne unterstützte Telemetrie sollen weiterhin abspielbar sein; fehlende Daten werden ausdrücklich als „keine Daten“ angezeigt. Neue Adapter sollen anhand geeigneter Beispieldateien separat getestet werden. Kenwood DRV-N520 ist ein erster geplanter Kandidat, keine Beschränkung auf einen Hersteller. Ein erster Kenwood-Adapter ist verfügbar; eine allgemeine Adapterschnittstelle für weitere Modelle ist geplant.
 
 ## UI-Zielbild
 
@@ -19,6 +19,16 @@ Das folgende **KI-generierte Zielbild** dient als visuelle Orientierung für die
 ## Start auf CachyOS / Arch
 
 FFmpeg und ffprobe müssen im PATH liegen. Falls sie fehlen, nach eigener Prüfung über die Arch-Paketverwaltung installieren (`sudo pacman -S ffmpeg python`). Das Projekt installiert selbst keine Systempakete.
+
+Im Projektordner starten:
+
+```sh
+bash ./start.sh
+```
+
+Beim ersten Start legt das Skript die lokale Python-Umgebung an und lädt PySide6, falls es fehlt. Optional lässt sich mit `bash ./install-starter.sh` der Eintrag **DashCam Studio** im Anwendungsmenü des aktuellen Benutzers anlegen. Nach einem Umzug des Projektordners das Installationsskript im neuen Ordner erneut ausführen.
+
+Manuell lässt sich die Anwendung ebenfalls starten:
 
 Im Verzeichnis dieser README:
 
@@ -56,7 +66,7 @@ Projekt/
   metadata/<UUID>.json   # vollständige ffprobe-Ausgabe + duration_ms
   cache/<SHA256>/        # zwölf JPEGs + optional proxy.mp4
   exports/               # vorgeschlagenes Exportziel
-  telemetry/             # reserviert für spätere Telemetrie
+  telemetry/             # NMEA-Rohdaten und normalisierte Telemetrie
 ```
 
 `core.py` enthält das Qt-unabhängige Modell und FFmpeg-Dienste, `app.py` die Oberfläche. Ein serieller Worker hält Hashing, Import, Vorschauerzeugung und Export vom GUI-Thread fern. Währenddessen sind Projektwechsel und weitere Medienaufträge gesperrt. Schließen wartet auf das Ende des laufenden Vorgangs; ein Abbrechen-Button ist noch nicht vorhanden.
@@ -65,7 +75,7 @@ Projekt und Metadaten werden über temporäre Dateien plus atomarem Austausch ge
 
 Verwaltete Projekte können als kompletter Ordner verschoben werden. Externe Referenzen sind absolute Pfade und benötigen danach ggf. Relinking. Schema 1 wird geprüft; unbekannte Versionen werden abgelehnt. Die GUI sperrt das geöffnete Projekt unter Linux gegen eine zweite GUI-Instanz; direkte Bibliotheksaufrufe müssen selbst serialisiert werden. Projektdateien sind lokale Arbeitsdateien, kein Format für beliebige untrusted Downloads. Es gibt noch keine schemaübergreifenden Migrationen, Undo-Historie, Backup-Versionen oder Wiederherstellung verwaister Importkopien nach einem Rechnerabsturz. Für Archivierung den gesamten Projektordner sichern.
 
-Geschwindigkeit und G-Sensor zeigen ausdrücklich **keine Daten**. `telemetry: null` je Medium und der Telemetrieordner sind Erweiterungspunkte. Ein Kenwood-DRV-N520-Parser wird erst mit echten Beispieldateien implementiert und geprüft. Es werden keine Telemetriewerte erfunden.
+Ohne passende Messwerte zeigen Geschwindigkeit und G-Sensor ausdrücklich **keine Daten**. `telemetry: null` je Medium und der Telemetrieordner sind Erweiterungspunkte. Der erste Kenwood-Adapter verarbeitet passende NMEA-Begleitdateien (siehe SD-Import unten). Es werden keine Telemetriewerte erfunden.
 
 ## Tests und Demo
 
@@ -100,3 +110,23 @@ Für ein privates Repository muss GitHub-Zugriff eingerichtet sein. FFmpeg und f
 Entwicklungsstand und nächste Schritte stehen in `DEVELOPMENT.md`. Die synthetischen Demo-Videos sind enthalten. Eigene Aufnahmeprojekte bleiben außerhalb des Quellcode-Repositories; zum Mitnehmen den vollständigen Aufnahmeprojektordner separat kopieren. Unter `projects/` und `recordings/` abgelegte lokale Daten werden durch `.gitignore` ausgeschlossen.
 
 Qt-API-Grundlage: https://doc.qt.io/qtforpython-6/PySide6/QtMultimedia/QMediaPlayer.html
+
+## Kenwood DRV-N520: Import von SD-Karte
+
+Projekt öffnen oder erstellen → **Kenwood-SD importieren** → Hauptordner der gemounteten Karte wählen → gewünschte Aufnahmen anhaken. Die Videos werden lokal ins Projekt kopiert, zusammen mit passenden NMEA-Dateien aus `SYSTEM/NMEA/<Kategorie>/`. Andere Aufnahmen bleiben über den normalen Import nutzbar. Echte Aufnahmen und Fahrdaten gehören nicht ins Repository.
+
+Die Auswahlliste trennt manuelle, normale, Ereignis- und Parkaufnahmen sowie Fotos in Reitern. In jedem Reiter stehen die neuesten Einträge oben. Ausgewählte JPEG-Fotos werden separat in den Projektordner `photos/` kopiert. Datum und Uhrzeit stammen aus dem Kenwood-Dateinamen (Kamerauhr); Vorschaubilder werden beim Scrollen für sichtbare Einträge nachgeladen.
+
+Die Begleitdatei bleibt unverändert als `telemetry/<Medien-ID>.nmea` erhalten. Die daneben gespeicherte JSON-Datei enthält GPS-Position, Geschwindigkeit und drei G-Sensor-Rohkanäle. Der Player zeigt GPS-Geschwindigkeit und G-Sensor-Rohwerte; ein fehlender GPS-Fix unterdrückt die GPS-Anzeige unabhängig vom G-Sensor. Eine Karte ist noch nicht implementiert.
+
+Die Zeitzuordnung ist vorläufig: RMC-Gruppen werden aus der beobachteten Aufzeichnungsreihenfolge in 500-ms-Blöcke eingeordnet, jeweils mit bis zu fünf G-Sensorwerten im 100-ms-Raster. Wiederholte GPS-Zeitstempel werden nicht als exakte Videouhr verwendet. Startversatz, Sensoreinheit und Achszuordnung sind noch nicht verifiziert.
+
+Importierte Fotos und Videos erscheinen in der Projektliste. Zum Entfernen im Rechtsklickmenü **Aus Projektliste entfernen** wählen oder den Eintrag auswählen und oben **Entfernen** klicken. Dabei wird nur der Listeneintrag entfernt; Originale, Projektkopien und Exporte bleiben erhalten. Ein erneut importiertes, unverändertes Foto wird wieder in der Liste angezeigt.
+
+Beim Start kannst du eines der bis zu zehn zuletzt benutzten Projekte öffnen, einen anderen Projektordner wählen oder ein neues Projekt erstellen. Bereits vorhandene Projekte erscheinen nach dem nächsten erfolgreichen Öffnen in der Liste.
+
+In der Startauswahl entfernt **Aus Liste entfernen** nur den Verlaufseintrag. **Projekt löschen …** verschiebt nach einer Bestätigung den gesamten Projektordner mit allen darin gespeicherten Dateien in den Papierkorb. Extern verknüpfte Dateien bleiben erhalten.
+
+Unter **Farbschema** wählst du **System**, **Hell** oder **Dunkel**. Standard ist **System**. Die Auswahl wird lokal gespeichert.
+
+Unter dem Video zeigen GPS-Tacho und zwei getrennt skalierte Liniendiagramme die Geschwindigkeit und drei G-Sensor-Rohkanäle. Die gestrichelte Linie markiert die Wiedergabeposition. GPS-Lücken werden nicht interpoliert. Mit **Tacho-Einheit** wechselst du zwischen km/h und mph; über **GPS** und **Kanal 1–3** stellst du die Linienfarben ein. Einheit und Farben werden lokal gespeichert.

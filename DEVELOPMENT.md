@@ -2,11 +2,11 @@
 
 ## Ziel
 
-DashCam Studio für CachyOS/Arch Linux. PySide6/Qt, ffmpeg/ffprobe. Zuerst normale Testvideos, später DashCam-Telemetrie (Kenwood DRV-N520); echte Kenwood-Dateien liegen bisher nicht vor.
+DashCam Studio für CachyOS/Arch Linux. PySide6/Qt, ffmpeg/ffprobe. Zuerst normale Testvideos, später DashCam-Telemetrie (Kenwood DRV-N520); erste echte Kenwood-Aufnahmen wurden lokal analysiert.
 
 ## Architekturziel: weitere Kameras modular ergänzen
 
-Weitere Hersteller und Modelle über separate, austauschbare Kameraadapter ergänzen. Gemeinsame Schnittstellen für Dateierkennung, Aufnahmezuordnung und normalisierte Telemetrie vorsehen; Player, Projektmodell und UI von modellspezifischen Parsern trennen. Unbekannte Modelle und fehlende Telemetrie dürfen die normale Videowiedergabe nicht verhindern. Jeden Adapter mit geeigneten Beispieldateien prüfen. Diese Adapterarchitektur ist ein Entwicklungsziel und bisher nicht implementiert.
+Weitere Hersteller und Modelle über separate, austauschbare Kameraadapter ergänzen. Gemeinsame Schnittstellen für Dateierkennung, Aufnahmezuordnung und normalisierte Telemetrie vorsehen; Player, Projektmodell und UI von modellspezifischen Parsern trennen. Unbekannte Modelle und fehlende Telemetrie dürfen die normale Videowiedergabe nicht verhindern. Jeden Adapter mit geeigneten Beispieldateien prüfen. Der erste Kenwood-Adapter ist umgesetzt; ein allgemeines Adapterregister ist geplant.
 
 ## Implementiert
 
@@ -14,7 +14,7 @@ Weitere Hersteller und Modelle über separate, austauschbare Kameraadapter ergä
 - Nichtdestruktive Projektverwaltung mit standardmäßig kopierten, hashgeprüften Medien, optionalen externen Referenzen, Metadaten, Offline-Anzeige und Relinking identischer Dateien.
 - Cache für zwölf Vorschaubilder und optionale Proxys. Versions-/Inhaltsbasierte Invalidierung.
 - IN/OUT pro Medium und neu kodierter MP4-Export ohne Überschreiben vorhandener Dateien.
-- Vollbild mit Monitorwahl. Geschwindigkeit/G-Sensor explizit ohne Daten.
+- Vollbild mit Monitorwahl. GPS-Geschwindigkeit und G-Sensor-Rohwerte bei Kenwood-Clips mit passenden Messdaten.
 - Zuletzt behoben: Filmstreifen hatte keine synchrone Positionsmarkierung und abweichende Geometrie gegenüber dem Slider. `timeline.py` verwendet eine gemeinsame Zeit-/Pixelabbildung, Zeitlabels, gelben Abspielkopf und Abschnittsmarkierung. Klicken/Ziehen sucht die entsprechende Zeit.
 
 ## Aufbau
@@ -22,11 +22,11 @@ Weitere Hersteller und Modelle über separate, austauschbare Kameraadapter ergä
 - `dashcam_studio/core.py`: Projektmodell, Analyse, Import, Cache, Proxy und Export, ohne Qt.
 - `dashcam_studio/app.py`: Oberfläche und serieller Hintergrundworker, GUI-Projektsperre.
 - `dashcam_studio/timeline.py`: Filmstreifen, Positionsabbildung und Mausnavigation.
-- `tests/`: vier FFmpeg-/Projektintegrationstests sowie drei Qt-/Timeline-Tests.
+- `tests/`: Integrationstests für Projektverwaltung, Kenwood-Import und Qt-Oberfläche.
 
 ## Verifiziert
 
-Sieben Tests zuletzt erfolgreich mit Python 3.14.8, PySide6 6.12.0 und lokalem FFmpeg. GUI-Tests laufen mit `QT_QPA_PLATFORM=offscreen`; Audio wird darin ersetzt, da die isolierte Testumgebung keinen Audiozugriff hat. Tests erzeugen temporäre Videodateien. Ein synthetischer 5-s-Clip und ein 30-s-Clip mit Zeitanzeige und Testton liegen unter `demo/`.
+19 Tests zuletzt erfolgreich mit Python 3.14.8, PySide6 6.12.0 und lokalem FFmpeg. GUI-Tests laufen mit `QT_QPA_PLATFORM=offscreen`; Audio wird darin ersetzt, da die isolierte Testumgebung keinen Audiozugriff hat. Tests erzeugen temporäre Videodateien. Ein synthetischer 5-s-Clip und ein 30-s-Clip mit Zeitanzeige und Testton liegen unter `demo/`.
 
 ```sh
 QT_QPA_PLATFORM=offscreen .venv/bin/python -m unittest discover -s tests -v
@@ -37,8 +37,12 @@ QT_QPA_PLATFORM=offscreen .venv/bin/python -m unittest discover -s tests -v
 - Die korrigierte Filmstreifenanzeige interaktiv mit dem 30-s-Clip prüfen.
 - Ton und Vollbild auf dem tatsächlichen Linux-/Mehrmonitorsystem prüfen.
 - Abbrechen/Fortschritt für lange Medienjobs, robustere Absturz-Wiederherstellung und Projektbackups ergänzen.
-- Echte DashCam-Beispiele beschaffen, bevor ein Telemetrieparser entwickelt wird.
+- Zeitversatz, Sensoreinheiten und Achszuordnung mit echten Aufnahmen verifizieren.
 
 ## Datenregeln
 
 Originale ausschließlich lesen, nie verschieben/überschreiben/löschen. Medienordner und Metadaten sind Projektbestandteile, Cache ist regenerierbar. Exporte immer in neue Dateien. Keine erfundenen Telemetriewerte. Eigene Aufnahmen nicht versehentlich ins Quellcode-Repository übernehmen.
+
+## Erster Kenwood-Import
+
+`kenwood.py` erkennt die SD-Aufnahmekategorien, ordnet MOV und NMEA zu und normalisiert RMC/GSENS. Die Projektverwaltung sichert Video, Rohdatei und Telemetrie; Tests verwenden synthetische Testdaten. Zeitzuordnung bleibt geschätzt. GPS-Tacho und getrennte Linienplots mit konfigurierbaren Farben sind umgesetzt. Eine Kartenansicht ist noch offen.
