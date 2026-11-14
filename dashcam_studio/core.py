@@ -89,7 +89,7 @@ class Project:
             return path
         return Path(item['path']).resolve()
 
-    def import_media(self, source, managed=True):
+    def import_media(self, source, managed=True, *, camera_clip=None):
         source = Path(source).resolve(strict=True)
         metadata = probe(source)
         identity = fingerprint(source)
@@ -108,10 +108,103 @@ class Project:
                 'path': str(target.relative_to(self.root)) if managed else str(source),
                 'managed': managed, 'sha256': identity, 'duration_ms': metadata['duration_ms'],
                 'in_ms': 0, 'out_ms': metadata['duration_ms'], 'telemetry': None}
-        atomic_json(self.root / 'metadata' / (uid + '.json'), metadata)
-        self.data['media'].append(item)
-        self.save()
+        metadata_path = self.root / 'metadata' / (uid + '.json')
+        raw_path = self.root / 'telemetry' / (uid + '.nmea')
+        normalized = raw_path.with_suffix('.json')
+        try:
+            if camera_clip is not None:
+                from .kenwood import ADAPTER, parse
+                item.update(camera=ADAPTER, category=camera_clip.category)
+                if camera_clip.sidecar is not None:
+                    raw = camera_clip.sidecar.read_bytes()
+                    raw_path.parent.mkdir(exist_ok=True)
+                    raw_path.write_bytes(raw)
+                    atomic_json(normalized, parse(raw, item['duration_ms']))
+                    item['telemetry'] = {'adapter': ADAPTER, 'video_sha256': identity}
+            atomic_json(metadata_path, metadata)
+            self.data['media'].append(item)
+            self.save()
+        except Exception:
+            if item in self.data['media']:
+                self.data['media'].remove(item)
+            for path in (metadata_path, raw_path, normalized, target):
+                path.unlink(missing_ok=True)
+            raise
         return item
+
+    def photos(self):
+        from .kenwood import PHOTO_SUFFIXES
+        hidden = set(self.data.get('removed_photos', []))
+        return sorted(path for path in (self.root / 'photos').glob('*')
+                      if path.is_file() and path.suffix.lower() in PHOTO_SUFFIXES
+                      and path.name not in hidden)
+
+    def remove_entry(self, *, media=None, photo=None):
+        """Remove a library entry without deleting any file."""
+        if (media is None) == (photo is None):
+            raise ValueError('Genau einen Eintrag auswählen')
+        if photo is not None:
+            if photo not in self.photos():
+                raise ValueError('Foto gehört nicht zur Projektliste')
+            previous = self.data.get('removed_photos', [])
+            self.data['removed_photos'] = [*previous, photo.name]
+            try:
+                self.save()
+            except Exception:
+                self.data['removed_photos'] = previous
+                raise
+        else:
+            items = self.data['media']
+            index = items.index(media)
+            items.pop(index)
+            try:
+                self.save()
+            except Exception:
+                items.insert(index, media)
+                raise
+
+    def import_photo(self, source):
+        from .kenwood import PHOTO_SUFFIXES
+        source = Path(source)
+        if source.suffix.lower() not in PHOTO_SUFFIXES:
+            raise ValueError('Nur JPEG-Fotos werden unterstützt')
+        folder = self.root / 'photos'
+        folder.mkdir(exist_ok=True)
+        target = folder / source.name
+        if target.exists() and fingerprint(target) == fingerprint(source):
+            previous = self.data.get('removed_photos', [])
+            if target.name in previous:
+                self.data['removed_photos'] = [name for name in previous if name != target.name]
+                try:
+                    self.save()
+                except Exception:
+                    self.data['removed_photos'] = previous
+                    raise
+            return target
+        if target.exists():
+            target = folder / f'{source.stem}-{uuid.uuid4().hex}{source.suffix}'
+        with tempfile.NamedTemporaryFile(dir=folder, delete=False) as tmp:
+            staged = Path(tmp.name)
+            try:
+                with source.open('rb') as original:
+                    shutil.copyfileobj(original, tmp)
+                tmp.flush()
+                os.link(staged, target)
+            finally:
+                staged.unlink(missing_ok=True)
+        return target
+
+    def load_telemetry(self, item):
+        info = item.get('telemetry')
+        if not isinstance(info, dict) or info.get('video_sha256') != item['sha256']:
+            return None
+        uid = item['id']
+        if uuid.UUID(hex=uid).hex != uid:
+            raise ValueError('Ungültige Medien-ID')
+        path = self.root / 'telemetry' / (uid + '.json')
+        if not path.is_file():
+            return None
+        return json.loads(path.read_text())
 
     def refresh(self, item):
         path = self.path(item)

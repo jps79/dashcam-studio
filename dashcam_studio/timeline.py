@@ -1,6 +1,6 @@
 """Filmstrip with a single time-to-pixel mapping for painting and seeking."""
 from PySide6.QtCore import Qt, Signal, QRectF
-from PySide6.QtGui import QPainter, QColor, QPixmap, QPen
+from PySide6.QtGui import QPainter, QPixmap, QPen, QPalette
 from PySide6.QtWidgets import QWidget
 
 
@@ -45,7 +45,7 @@ class Filmstrip(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor('#10161e'))
+        painter.fillRect(self.rect(), self.palette().color(QPalette.Base))
         if not self.frames or not self.duration:
             return
         width = self.width() / len(self.frames)
@@ -53,12 +53,12 @@ class Filmstrip(QWidget):
         for index, frame in enumerate(self.frames):
             rect = QRectF(index * width, 0, width, self.height() - 23)
             painter.drawPixmap(rect, frame, QRectF(frame.rect()))
-            painter.setPen(QColor('#dde5ef'))
+            painter.setPen(self.palette().color(QPalette.Text))
             painter.drawText(QRectF(index * width + 3, self.height() - 22, width - 6, 20),
                              Qt.AlignLeft | Qt.AlignVCenter, timestamp(index * self.duration / len(self.frames)))
             if index == active:
-                painter.setPen(QPen(QColor('#46b8dc'), 2))
+                painter.setPen(QPen(self.palette().color(QPalette.Highlight), 2))
                 painter.drawRect(rect.adjusted(1, 1, -1, -1))
         x = self.position / self.duration * (self.width() - 1)
-        painter.setPen(QPen(QColor('#ffcc55'), 3))
+        painter.setPen(QPen(self.palette().color(QPalette.Text), 3))
         painter.drawLine(round(x), 0, round(x), self.height())
