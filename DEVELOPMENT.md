@@ -26,7 +26,7 @@ Weitere Hersteller und Modelle über separate, austauschbare Kameraadapter ergä
 
 ## Verifiziert
 
-19 Tests zuletzt erfolgreich mit Python 3.14.8, PySide6 6.12.0 und lokalem FFmpeg. GUI-Tests laufen mit `QT_QPA_PLATFORM=offscreen`; Audio wird darin ersetzt, da die isolierte Testumgebung keinen Audiozugriff hat. Tests erzeugen temporäre Videodateien. Ein synthetischer 5-s-Clip und ein 30-s-Clip mit Zeitanzeige und Testton liegen unter `demo/`.
+24 Tests zuletzt erfolgreich mit Python 3.14.8, PySide6 6.12.0 und lokalem FFmpeg. GUI-Tests laufen mit `QT_QPA_PLATFORM=offscreen`; Audio wird darin ersetzt, da die isolierte Testumgebung keinen Audiozugriff hat. Tests erzeugen temporäre Videodateien. Ein synthetischer 5-s-Clip und ein 30-s-Clip mit Zeitanzeige und Testton liegen unter `demo/`.
 
 ```sh
 QT_QPA_PLATFORM=offscreen .venv/bin/python -m unittest discover -s tests -v
@@ -45,4 +45,15 @@ Originale ausschließlich lesen, nie verschieben/überschreiben/löschen. Medien
 
 ## Erster Kenwood-Import
 
-`kenwood.py` erkennt die SD-Aufnahmekategorien, ordnet MOV und NMEA zu und normalisiert RMC/GSENS. Die Projektverwaltung sichert Video, Rohdatei und Telemetrie; Tests verwenden synthetische Testdaten. Zeitzuordnung bleibt geschätzt. GPS-Tacho und getrennte Linienplots mit konfigurierbaren Farben sind umgesetzt. Eine Kartenansicht ist noch offen.
+`kenwood.py` erkennt die SD-Aufnahmekategorien, ordnet MOV und NMEA zu und normalisiert RMC/GSENS. Die Projektverwaltung sichert Video, Rohdatei und Telemetrie; Tests verwenden synthetische Testdaten. Zeitzuordnung bleibt geschätzt. GPS-Tacho und getrennte Linienplots mit konfigurierbaren Farben sind umgesetzt. Die Kartenansicht zeigt OSM oder die lokale GPS-Spur.
+
+## Änderungen seit dem letzten veröffentlichten Codestand (14.11.2026)
+
+- Oberfläche am Zielbild ausgerichtet: Video, GPS-Tacho und Karte oben; Filmstreifen und Messkurven darunter, Projektmedien rechts. Medienvorschauen zeigen Aufnahmedatum und Start–Ende nach Kamerauhr.
+- Tacho bis 200 km/h, bei höheren GPS-Spitzen in 50-km/h-Schritten erweitert. Roter Bereich oberhalb von 130 km/h; Marken werden für mph umgerechnet.
+- OpenStreetMap ist die Standardkarte, Offline-GPS-Spur bleibt verfügbar. Satelliten- und regionale Luftbilder wurden nach Erprobung entfernt. Der weiche Nachlauf ist auf 10–50 % Randabstand einstellbar (Vorgabe: 50 %).
+- Erstes Videobild erscheint beim Auswählen vor dem Laden des Filmstreifens. Beim Suchen bleibt das letzte gültige Bild sichtbar. Softwaredekodierung ist wegen beobachteter Abstürze bei der Qt-Bildkonvertierung voreingestellt.
+- Bildzoom per Mausrad und Verschieben per Maus. PNG-Einzelbilder und MP4-Schnitte verwenden den sichtbaren Ausschnitt aus der Originaldatei. IN/OUT-Griffe sind ziehbar; der Bereich kann einmal oder als Schleife abgespielt werden. Die Exportaktionen befinden sich unter dem Video, mit kurzen Hover-Hinweisen.
+- Vollbild: Pfeile wechseln die Laufrichtung während der Wiedergabe (rückwärts ohne Ton). Pausiert springen sie ein Bild; Halten wiederholt Fünfer-Schritte. Enter öffnet den PNG-Speicherdialog.
+
+Diese Übersicht dokumentiert den lokalen Entwicklungsstand; sie enthält keine Aufnahme- oder Fahrdaten.
