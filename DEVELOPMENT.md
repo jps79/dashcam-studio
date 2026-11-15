@@ -57,3 +57,21 @@ Originale ausschließlich lesen, nie verschieben/überschreiben/löschen. Medien
 - Vollbild: Pfeile wechseln die Laufrichtung während der Wiedergabe (rückwärts ohne Ton). Pausiert springen sie ein Bild; Halten wiederholt Fünfer-Schritte. Enter öffnet den PNG-Speicherdialog.
 
 Diese Übersicht dokumentiert den lokalen Entwicklungsstand; sie enthält keine Aufnahme- oder Fahrdaten.
+
+## Abgleich mit dem UI-Zielbild
+
+Vorhanden sind Video und Zoom, GPS-Tacho und OSM-Karte, Wiedergabegeschwindigkeit, Filmstreifen mit wählbarer Vorschauhöhe und IN/OUT, getrennte Geschwindigkeit-/G-Sensor-Kurven, Kanalfilter, Projektmedien und Exporte, Standbild und MP4-Export. Neben dem Tacho stehen Aufnahmedatum, Dauer sowie GPS-Durchschnitt und Maximum für vorhandene Messwerte. Projektänderungen werden automatisch gespeichert.
+
+Noch offen: Menüstruktur wie im Entwurf, Positionskoordinaten direkt auf dem Videobild, separates Register der aktuellen Kanalwerte mit bestätigter Achszuordnung und Einheit, Zeitachsen-Zoom unabhängig von der Vorschauhöhe, Lesezeichen, eigener Schnittbereichsregler mit zwei Griffen, alternative Exportprofile und Karten-Vollbild. Satellitenbilder wurden auf Wunsch entfernt.
+
+## Entwicklungsstand vom 15.11.2026 (AI-assisted)
+
+- **Exporte:** Eigener Reiter für MP4- und Bilddateien mit Vorschau, Zeitstempel und MP4-Dauer. Ein Klick öffnet den Export; per Kontextmenü kann er nach Bestätigung in den Papierkorb verschoben werden. MP4-Exporte zeigen beim Öffnen einen Filmstreifen und die Audio-Wellenform.
+- **Schnitt und Ton:** Die Wellenform folgt dem Abspielkopf und erlaubt Positionssprünge. Beim Export von Projektmedien kann die Tonspur entfallen oder in mehreren markierten Bereichen stummgeschaltet werden. Der ausgewählte Stummbereich ist gelb-orange. Der MP4-Export zeigt Vorbereitung, FFmpeg-Kodierfortschritt und Speichern in der Statusleiste.
+- **Oberfläche:** Eigenes Kamera-Icon für Fenster, Starter und Dock; Abspielgeschwindigkeit, Filmstreifengröße und G-Sensor-Kanalfilter. Unter dem Tacho stehen Kameradatum und Startzeit, Dauer, GPS-Strecke sowie Durchschnitts- und Höchstgeschwindigkeit. Anzeigen und Bedienelemente ohne verfügbare Telemetrie werden ausgeblendet. OSM bleibt die Standardkarte, die Offline-Spur bleibt verfügbar. Die separate Straßennamensanzeige samt Overpass-Abrufen und die nicht zuverlässig ladende Vektorkarte wurden nach dem Versuch entfernt.
+- **Externe Videoausgabe:** Separates Fenster mit Monitor- und Audioauswahl. Lokales Vollbild verwendet den aktuellen Bildschirm. Für den bisherigen Spiegelversuch kann GNOME Network Displays geöffnet werden; auf dem getesteten BRAVIA führte dieser Weg nicht zuverlässig zur Medienwiedergabe, auch außerhalb von Flatpak.
+- **Direkter Chromecast-Test:** Optionales PyChromecast-Modul verwendet Googles Default Media Receiver für kompatible MP4-Dateien. Das Cast-Fenster bietet Gerätesuche, Verbinden/Trennen, Clipwechsel, Wiedergabe, Pause und Zeitposition. Der Receiver zieht die Datei mit HTTP-Teilabrufen vom Rechner. Der lokale Medienserver liefert nur den aktuellen Clip an die IP des verbundenen Empfängers und wird beim Trennen beendet. Die App zeigt Ladezustand bzw. einen ausbleibenden Dateiabruf. **Der MP4-Abruf am Sony BRAVIA wurde vom Nutzer erfolgreich bestätigt**, nachdem UFW den eingehenden TCP-Port 8765 gezielt für den Fernseher freigab. Keine pauschale Firewall-Freigabe oder Weiterleitung aus dem Internet nötig. YouTube-Cast im Browser war unabhängig davon erfolgreich, weil der Fernseher das Video dort direkt von YouTube lädt.
+- **Noch offen:** Live-Zoom am TV ([#1 Custom Web Receiver](https://github.com/jps79/dashcam-studio/issues/1), [#2 Google-TV-App](https://github.com/jps79/dashcam-studio/issues/2)), AirPlay sowie direktes Abspielen von Kenwood-MOV ohne vorherigen MP4-Export. Vollständige Funktionsabnahme von Cast-Steuerung und Ton am BRAVIA steht noch aus.
+- **Rust:** Der CLI-Prototyp wurde lokal unter Linux gebaut und mit synthetischen Daten für Scan, Kopie und Schutz gegen Überschreiben getestet. Windows-Build und Desktopoberfläche bleiben offen.
+
+Dieser Eintrag beschreibt den lokalen Entwicklungsstand; die zugehörigen Änderungen am Anwendungscode werden mit diesem Dokumentations-Commit nicht veröffentlicht.
